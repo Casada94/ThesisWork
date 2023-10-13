@@ -16,7 +16,7 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
 	this->isInputLayer = isInputLayer;
 	this->isOutputLayer = isOutputLayer;
 	this->dropOutRate = dropOutRate;
-	//std::srand(static_cast<unsigned>(std::time(nullptr)));
+	std::srand(static_cast<unsigned>(std::time(nullptr)));
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<int> distribution(1, 10000);
@@ -27,7 +27,7 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
 		bias = vector<double>(vector<double>(nodeCount, 0));
 		activeLayer = vector<int>(nodeCount);
 		output = vector<double>(nodeCount, 0);
-		std::srand(static_cast<unsigned>(std::time(nullptr)));
+		//std::srand(static_cast<unsigned>(std::time(nullptr)));
 		for (int k = 0; k < previousLayerNodeCount; k++) {	//all the weights from T/B to my T/B
 			for (int l = 0; l < nodeCount; l++) {
 				weights[k][l] = (double)distribution(gen) / 10000;
@@ -57,15 +57,6 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
 	}
 }
 
-//Setter for previous layer pointer; needed for backpropagation
-void DropOutLayer::setPreviousLayer(DropOutLayer* previousLayer) {
-	this->previousLayer = previousLayer;
-}
-
-//setter for nextLayer needed for backpropagation
-void DropOutLayer::setNextLayer(DropOutLayer* nextLayer) {
-	this->nextLayer = nextLayer;
-}
 
 //resets the weights and biases; used to reset the network for retraining
 void DropOutLayer::resetWeightsAndBias() {
@@ -73,7 +64,7 @@ void DropOutLayer::resetWeightsAndBias() {
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<int> distribution(1, 10000);
 
-	int prevLayerNodeCount = this->previousLayer->getActiveLayer().size();
+	int prevLayerNodeCount = previousLayer->getNodeCount();
 
 	for (int k = 0; k < prevLayerNodeCount; k++) {
 		for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
@@ -89,23 +80,16 @@ void DropOutLayer::rollActiveLayers() {
 	std::srand(static_cast<unsigned>(std::time(nullptr)));
 	for (int i = 0; i < activeLayer.size(); i++) {
 		int temp = std::rand() % 100;
-		if (temp <= this->dropOutRate)
+		if (!isOutputLayer && temp <= this->dropOutRate)
 			activeLayer[i] = 0;
 		else
 			activeLayer[i] = 1;
 	}
 }
 
-void DropOutLayer::setOutput(vector<double>& rawInput) {
-	if (this->isInputLayer && rawInput.size() == this->output.size()) {
-		for (int i = 0; i < this->output.size(); i++) {
-			this->output[i] = rawInput.at(i);
-		}
-	}
-}
-void DropOutLayer::setOutput(double rawInput) {
-	if (this->isInputLayer) {
-		this->output[0] = rawInput;
+void DropOutLayer::useAllNodes() {
+	for (int i = 0; i < activeLayer.size(); i++) {
+			activeLayer[i] = 1;
 	}
 }
 
@@ -134,44 +118,13 @@ void DropOutLayer::forwardPropagation() {
 
 }
 
-vector<double>& DropOutLayer::getOutput() {
-	return this->output;
-}
-vector<int>& DropOutLayer::getActiveLayer() {
-	return this->activeLayer;
-}
-
-//calculated the output of a 'node' using the configured activation function
-double DropOutLayer::activationFunction(double sum) {
-	switch (this->activationFunctionSelected) {
-	case 0:
-		return 1.0 / (1.0 + std::exp(-sum));
-		break;
-	case 1:
-		return (std::exp(sum) - std::exp(-sum)) / (std::exp(sum) + std::exp(-sum));
-		break;
-	case 2:
-		if (sum < 0) {
-			return 0.0;
-		}
-		else {
-			return sum;
-		}
-		break;
-	default:
-		return sum;
-		//cerr << "Invalid activation function selected" << endl;
-	}
-}
-
-
 void DropOutLayer::updateAllWeights(double loss, double learningRate) {
-	vector<int>& prevActiveLayer = previousLayer->getActiveLayer();
+	//vector<int>& prevActiveLayer = previousLayer->getActiveLayer();
 	vector<double>& prevOutput = previousLayer->getOutput();
 
 	if (isOutputLayer) {
 		for (int i = 0; i < nodeCount; i++) {
-			for (int j = 0; j < prevActiveLayer.size(); j++) {
+			for (int j = 0; j < prevOutput.size(); j++) {
 				//this->weights[prevActiveLayer.at(j)][activeLayer[i]][j][i] -= prevOutput[j] * this->getMyActPartDeriv(i) * loss * learningRate;
 				this->weights[j][i] -= prevOutput[j] * this->getMyActPartDeriv(i) * loss * learningRate;
 			}
@@ -180,7 +133,7 @@ void DropOutLayer::updateAllWeights(double loss, double learningRate) {
 	else {
 		for (int i = 0; i < nodeCount; i++) {
 			if (activeLayer[i]) {
-				for (int j = 0; j < prevActiveLayer.size(); j++) {
+				for (int j = 0; j < prevOutput.size(); j++) {
 					this->weights[j][i] -= prevOutput[j] * nextLayer->getPartDerivThrough(i, loss) * this->getMyActPartDeriv(i) * learningRate;
 				}
 			}
@@ -201,27 +154,6 @@ void DropOutLayer::updateAllBiases(double loss, double learningRate) {
 	}
 }
 
-double DropOutLayer::getMyActPartDeriv(int index) {
-	switch (this->activationFunctionSelected) {
-	case 0:
-		return this->output[index] * (1 - this->output[index]);
-		break;
-	case 1:
-		return 1 - pow(this->output[index], 2);
-		break;
-	case 2:
-		if (this->output[index] <= 0) {
-			return 0.0;
-		}
-		else {
-			return 1.0;
-		}
-		break;
-	default:
-		return 1.0;
-		//cerr << "Invalid activation function selected" << endl;
-	}
-}
 
 //arg 'loss' is already the partialDeriv of loss function
 double DropOutLayer::getPartDerivThrough(int fromNode, double loss) {
@@ -243,9 +175,26 @@ double DropOutLayer::getPartDerivThrough(int fromNode, double loss) {
 	}
 	return sum;
 }
-
-void DropOutLayer::getBackProp() {
-
+double DropOutLayer::getPartDerivThrough(int fromNode, int fromNodeStack, double loss) {
+	throw std::exception("Incorrect getPartDerivThrough() called for this class");
 }
+void DropOutLayer::shakeWeights(double lowShake, double highShake) {
+	int prevLayerNodeCount = previousLayer->getNodeCount();
+	std::srand(static_cast<unsigned>(std::time(nullptr)));
+
+	for (int k = 0; k < prevLayerNodeCount; k++) {
+		for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
+			if (rand() % 2) {
+				weights[k][l] *= highShake;
+			}
+			else {
+				weights[k][l] *= lowShake;
+			}
+		}
+	}
+}
+//void DropOutLayer::getBackProp() {
+//
+//}
 
 
