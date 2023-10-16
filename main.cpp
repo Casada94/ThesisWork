@@ -9,6 +9,9 @@
 #include <cmath>
 #include <algorithm>
 #include <memory>
+#include <random>
+
+std::vector<std::unique_ptr<Layer>> createHybridNetwork(std::vector<int>& layerNodeCount, std::vector<int>& layerTypeDef, int layerDepth, int dropOutRate);
 
 //FatLayer Methods
 std::vector<std::unique_ptr<Layer>> createFatNetwork(std::vector<int>& layerNodeCount, int layerDepth);
@@ -16,15 +19,14 @@ void testFatNetwork(std::vector<std::unique_ptr<Layer>>& fatNetwork, int epochs,
 
 //DropOutLayer Methods
 std::vector<std::unique_ptr<Layer>> createDropOutNetwork(std::vector<int>& layerNodeCount, int dropOutRate);
-//std::vector<double> forwardProp(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, double data);
-void rollNodes(std::vector<std::unique_ptr<Layer>>& dropOutNetwork);
 void testDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork,int epochs, double learningRate, std::vector<std::vector<double>>& input, std::vector<double>& yTrue, std::string trainingFile, std::string predictFile);
+void useAllNodes(std::vector<std::unique_ptr<Layer>>& network);
 
 //Shared
 std::vector<double> forwardProp(std::vector< std::unique_ptr<Layer>>& network, std::vector<double>& data);
 void backProp(std::vector<std::unique_ptr<Layer>>& network, double loss, double learningRate);
 void resetNetworkWeightsAndBiases(std::vector<std::unique_ptr<Layer>>& network);
-void useAllNodes(std::vector<std::unique_ptr<Layer>>& network);
+void rollNodes(std::vector<std::unique_ptr<Layer>>& dropOutNetwork);
 void readDataSet(std::string filename, std::vector<std::vector<double>>& input);
 void readDataSet(std::string filename, std::vector<double>& yTrue);
 std::vector<std::string> splitString(const std::string& str, char delimiter);
@@ -32,32 +34,101 @@ void shuffleRows(std::vector<std::vector<double>>& data, std::vector<double>& yT
 void shakeWeights(std::vector<std::unique_ptr<Layer>>& network,double lowShake,double highShake);
 
 int main() {
-	std::vector<int> fatLayerNodeCounts = { 8,16,8,1 };
-	std::vector<int> dropOutLayerNodeCounts =	{ 8,20,10,1 };
-	int epochs = 300;
-	double learningRate = .01; 
-	int dropOutPercent = 10;
-	int layerDepth = 2;
+	std::vector<int> fatLayerNodeCounts = { 8,16,32,16,1 };
+	std::vector<int> dropOutLayerNodeCounts =	{ 8,16,32,16,1 };
+//    std::vector<int> layerTypeDef = {0,1,0,0};
+	int epochs = 2500;
+	double learningRate = 0.01;
+	int dropOutPercent = 0;
+	int layerDepth = 3;
 
 	std::vector<std::unique_ptr<Layer>> fatNetwork = createFatNetwork(fatLayerNodeCounts, layerDepth);
-	std::vector<std::unique_ptr<Layer>> dropOutNetwork = createDropOutNetwork(dropOutLayerNodeCounts, dropOutPercent);
+	std::vector<std::unique_ptr<Layer>> dropOutNetwork = createDropOutNetwork(dropOutLayerNodeCounts, 50);
+//    std::vector<std::unique_ptr<Layer>> dropOutNetwork2 = createDropOutNetwork(dropOutLayerNodeCounts, 20);
+
+//    std::vector<std::unique_ptr<Layer>> hybridNetwork = createHybridNetwork(fatLayerNodeCounts,layerTypeDef,layerDepth,dropOutPercent);
 
 	std::vector<std::vector<double>> input(20640,std::vector<double>(8,0));
 	std::vector<double> yTrue(20640,0);
-	readDataSet("C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\input\\housingData.csv", input);
-	readDataSet("C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\input\\housingDataTrueY.csv", yTrue);
+	readDataSet("C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\input\\housingData.csv", input);
+	readDataSet("C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\input\\housingDataTrueY.csv", yTrue);
 	
 	//ROUND 1
 	shuffleRows(input, yTrue, yTrue.size());
 	testFatNetwork(fatNetwork,epochs,learningRate,input,yTrue,
-		"C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\output\\dropOut\\trainingLoss1.csv",
-		"C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\output\\dropOut\\predictionOutput1.csv");
-	//testDropOutNetwork(dropOutNetwork, epochs, learningRate, input, yTrue,
-	//	"C:/Users/metal/Desktop/Thesis/output/dropOutNode/trainingLoss1.csv",
-	//	"C:/Users/metal/Desktop/Thesis/output/dropOutNode/predictionOutput1.csv");
+		"C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\fatNode\\trainingLoss1.csv",
+		"C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\fatNode\\predictionOutput1.csv");
+//    resetNetworkWeightsAndBiases(fatNetwork);
+//    shuffleRows(input,yTrue,yTrue.size());
+//    testFatNetwork(fatNetwork,epochs,learningRate,input,yTrue,
+//                   "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\fatNode\\trainingLoss2.csv",
+//                   "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\fatNode\\predictionOutput2.csv");
+//    resetNetworkWeightsAndBiases(fatNetwork);
+//    shuffleRows(input,yTrue,yTrue.size());
+//    testFatNetwork(fatNetwork,epochs,learningRate,input,yTrue,
+//                   "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\fatNode\\trainingLoss3.csv",
+//                   "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\fatNode\\predictionOutput3.csv");
+//    shuffleRows(input,yTrue,yTrue.size());
+//    testDropOutNetwork(dropOutNetwork, epochs, learningRate, input, yTrue,
+//                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\dropOut\\trainingLoss1.csv",
+//                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\dropOut\\predictionOutput1.csv");
+//    resetNetworkWeightsAndBiases(dropOutNetwork);
+//    shuffleRows(input,yTrue,yTrue.size());
+    testDropOutNetwork(dropOutNetwork, epochs, learningRate, input, yTrue,
+                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\dropOut\\trainingLoss3.csv",
+                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\dropOut\\predictionOutput3.csv");
+//    resetNetworkWeightsAndBiases(dropOutNetwork);
+//    shuffleRows(input,yTrue,yTrue.size());
+//    testDropOutNetwork(dropOutNetwork2, epochs, learningRate, input, yTrue,
+//                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\dropOut\\trainingLoss2.csv",
+//                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\dropOut\\predictionOutput2.csv");
+//    resetNetworkWeightsAndBiases(fatNetwork);
+//    shuffleRows(input,yTrue,yTrue.size());
 
-	
- }
+
+}
+//HYBRID NETWORK
+std::vector<std::unique_ptr<Layer>> createHybridNetwork(std::vector<int>& layerNodeCount, std::vector<int>& layerTypeDef, int layerDepth, int dropOutRate){
+    std::vector<std::unique_ptr<Layer>> network;
+    for (int i = 0; i < layerNodeCount.size(); i++) {
+        if(layerTypeDef[i]){
+            if (i == 0) {
+                network.push_back(std::unique_ptr<Layer>(new FatLayer(layerNodeCount.at(i), 0, layerDepth,2, true, false)));
+            }
+            else if (i == layerNodeCount.size() - 1) {
+                network.push_back(std::unique_ptr<Layer>(new FatLayer(layerNodeCount.at(i), layerNodeCount.at(i-1), layerDepth, 3, false, true)));
+            }
+            else {
+                network.push_back(std::unique_ptr<Layer>(new FatLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), layerDepth, 0, false, false)));
+            }
+        } else{
+            if (i == 0) {
+                network.push_back(std::unique_ptr<Layer>(new DropOutLayer(layerNodeCount.at(i), 0, 2, dropOutRate, true, false)));
+            }
+            else if (i == layerNodeCount.size() - 1) {
+                network.push_back(std::unique_ptr<Layer>(new DropOutLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), 3, dropOutRate, false, true)));
+            }
+            else {
+                network.push_back(std::unique_ptr<Layer>(new DropOutLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), 0, dropOutRate, false, false)));
+            }
+        }
+    }
+    for (int i = 0; i < network.size(); i++) {
+        if (i == 0) {
+            network.at(i).get()->setNextLayer(network.at(i+1).get());
+        }
+        else if (i == network.size() - 1) {
+            network.at(i).get()->setPreviousLayer(network.at(i - 1).get());
+        }
+        else {
+            network.at(i).get()->setNextLayer(network.at(i + 1).get());
+            network.at(i).get()->setPreviousLayer(network.at(i - 1).get());
+        }
+    }
+    return network;
+
+}
+
 
 // FAT LAYER METHODS
 std::vector<std::unique_ptr<Layer>> createFatNetwork(std::vector<int>& layerNodeCount, int layerDepth) {
@@ -96,10 +167,14 @@ void testFatNetwork(std::vector<std::unique_ptr<Layer>>& fatNetwork, int epochs,
 	double trainingLoss = 0.0;
 	double validLoss = 0.0;
 	int startOfTestIndex = (int)(input.size() * .75);
-	int startOfValidIndex = (int)(startOfTestIndex * .75);
-	double highShake = 1.1;
-	double lowShake = .9;
-	std::vector<bool> valGreaterTrain = { false,false,false,false,false };
+	int startOfValidIndex = (int)(startOfTestIndex * .5);
+//	double highShake = 1.1;
+//	double lowShake = .9;
+//	std::vector<bool> valGreaterTrain = { false,false,false,false,false };
+
+    fatLayerTrainingFile << std::fixed << std::setprecision(7);
+    std::cout << std::fixed << std::setprecision(7);
+    fatLayerTestingFile << std::fixed << std::setprecision(12);
 
 	for (int i = 0; i < epochs; i++) {
 		trainingLoss = 0;
@@ -118,47 +193,44 @@ void testFatNetwork(std::vector<std::unique_ptr<Layer>>& fatNetwork, int epochs,
 		}
 		trainingLoss /= startOfValidIndex;
 		validLoss /= (startOfTestIndex - startOfValidIndex);
-		valGreaterTrain[i % 5] = validLoss > trainingLoss;
-		std::cout << std::fixed << std::setprecision(7) << "Epoch: " << i << "\t" << "Training Loss: " << trainingLoss<< "\t" << "Valid Loss: " << validLoss << "\t" << std::endl;
-		fatLayerTrainingFile << std::fixed << std::setprecision(7)  << trainingLoss << "," << validLoss  << "\n";
-	
-		if (valGreaterTrain[0] && valGreaterTrain[1] && valGreaterTrain[2] && valGreaterTrain[3] && valGreaterTrain[4] && (epochs-i>15)) {
-			shakeWeights(fatNetwork,lowShake,highShake);
-			valGreaterTrain[0]=false, valGreaterTrain[1]=false, valGreaterTrain[2]=false, valGreaterTrain[3]=false, valGreaterTrain[4] = false;
-			lowShake *= lowShake;
-			highShake *= highShake;
-		}
+		std::cout  << "Epoch: " << i << "\t" << "Training Loss: " << trainingLoss<< "\t" << "Valid Loss: " << validLoss << "\t" << std::endl;
+		fatLayerTrainingFile  << trainingLoss << "," << validLoss  << "\n";
 	}
 
 	loss = 0;
-	double yHatOnce = 0;
-	double onceLoss = 0;
+	//double yHatOnce = 0;
+    double first =0;
+    double second =0;
+    double third=0;
+    double onceLoss = 0;
+    yHat=0;
 	for (int j = startOfTestIndex; j < input.size(); j++) {
 		rollNodes(fatNetwork);
-		yHatOnce = forwardProp(fatNetwork, input[j])[0];
-		yHat = yHatOnce;
-		for (int k = 0; k < 2; k++) {
-			rollNodes(fatNetwork);
-			yHat += forwardProp(fatNetwork, input[j])[0];
-		}
-		yHat /= 3;
-		loss += std::pow((yHat - yTrue[j]), 2);
-		onceLoss += std::pow((yHatOnce - yTrue[j]), 2);
+		first = forwardProp(fatNetwork, input[j])[0];
 
-		fatLayerTestingFile << yHat << "," << yHatOnce << "," << yTrue[j] << "\n";
-	}
+        rollNodes(fatNetwork);
+        second = forwardProp(fatNetwork, input[j])[0];
+
+        rollNodes(fatNetwork);
+        third = forwardProp(fatNetwork, input[j])[0];
+
+        yHat = (first+second+third)/3;
+		loss += std::pow((yHat - yTrue[j]), 2);
+		onceLoss += std::pow((first - yTrue[j]), 2);
+
+//        fatLayerTestingFile << yHat << "," << yHatOnce << "," << yTrue[j] << "\n";
+        fatLayerTestingFile << first << "," << second << "," << third << "," << yTrue[j] << "\n";
+
+    }
 	
 	std::cout << loss << std::endl;
 	std::cout << onceLoss << std::endl;
 	std::cout << std::fixed << std::setprecision(7) << "3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
-	fatLayerTestingFile << loss << "," << onceLoss << "," << "00" << "\n";
+//	fatLayerTestingFile << loss << "," << onceLoss << "," << "00" << "\n";
+    fatLayerTestingFile << loss << "," << onceLoss << "," << "00" << "," << "00" << "\n";
 
 	fatLayerTrainingFile.close();
 	fatLayerTestingFile.close();
-}
-void useAllNodes(std::vector<std::unique_ptr<Layer>>& dropOutNetwork) {
-	for (int i = 1; i < dropOutNetwork.size(); i++)
-		dropOutNetwork.at(i).get()->useAllNodes();
 }
 
 //DROP OUT LAYER METHODS
@@ -195,19 +267,22 @@ void testDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, int
 
 	double yHat = 0.0;
 	double loss = 0;
-	double traingingLoss = 0.0;
+	double trainingLoss = 0.0;
 	double validLoss = 0.0;
-	
-	int startOfTestIndex = (int)(input.size() * .75);
-	int startOfValidIndex = (int)(startOfTestIndex * .75);
 
+	int startOfTestIndex = (int)(input.size() * .75);
+	int startOfValidIndex = (int)(startOfTestIndex * .5);
+
+    std::cout << std::fixed << std::setprecision(7);
+    dropOutLayerTrainingFile << std::fixed << std::setprecision(7);
+    dropOutLayerTestingFile << std::fixed << std::setprecision(12);
 	for (int i = 0; i < epochs; i++) {
 		rollNodes(dropOutNetwork);
-		traingingLoss = 0;
+        trainingLoss = 0;
 		for (int j = 0; j < startOfValidIndex; j++) {
 			yHat = forwardProp(dropOutNetwork, input[j])[0];
 			loss = 2 * (yHat - yTrue[j]);
-			traingingLoss += std::pow((yHat - yTrue[j]), 2);
+            trainingLoss += std::pow((yHat - yTrue[j]), 2);
 			backProp(dropOutNetwork, loss, learningRate);
 			rollNodes(dropOutNetwork);
 		}
@@ -217,9 +292,11 @@ void testDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, int
 			yHat = forwardProp(dropOutNetwork, input[j])[0];
 			validLoss += std::pow((yHat - yTrue[j]), 2);
 		}
-		std::cout << std::fixed << std::setprecision(7) << "Epoch: " << i << "\t" << "Training Loss: " << traingingLoss / startOfValidIndex << "\t" << "Valid Loss: " << validLoss / (startOfTestIndex - startOfValidIndex) << "\t" << std::endl;
-		dropOutLayerTrainingFile << std::fixed << std::setprecision(7) << traingingLoss / startOfValidIndex << "," << validLoss / (startOfTestIndex - startOfValidIndex) << "\n";
-	}
+		std::cout << "Epoch: " << i << "\t" << "Training Loss: " << trainingLoss / startOfValidIndex << "\t" << "Valid Loss: " << validLoss / (startOfTestIndex - startOfValidIndex) << "\t" << std::endl;
+		dropOutLayerTrainingFile << trainingLoss / startOfValidIndex << "," << validLoss / (startOfTestIndex - startOfValidIndex) << "\n";
+	if(epochs%100==99 && learningRate!=0.01)
+        learningRate*=.1;
+    }
 
 	loss = 0;
 	double yHatOnce = 0;
@@ -234,16 +311,16 @@ void testDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, int
 	}
 	std::cout << loss << std::endl;
 	std::cout << onceLoss << std::endl;
-	std::cout << std::fixed << std::setprecision(7) << "3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
+	std::cout << "3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
 
 	dropOutLayerTestingFile << loss << "," << onceLoss << "," << "00" << "\n";
 
 	dropOutLayerTrainingFile.close();
 	dropOutLayerTestingFile.close();
 }
-void resetNetworkWeightsAndBiases(std::vector<std::unique_ptr<Layer>>& dropOutNetwork) {
+void useAllNodes(std::vector<std::unique_ptr<Layer>>& dropOutNetwork) {
 	for (int i = 1; i < dropOutNetwork.size(); i++)
-		dropOutNetwork.at(i).get()->resetWeightsAndBias();
+		dropOutNetwork.at(i).get()->useAllNodes();
 }
 
 //SHARED METHODS
@@ -318,15 +395,18 @@ std::vector<std::string> splitString(const std::string& str, char delimiter) {
 	return tokens;
 }
 void shuffleRows(std::vector<std::vector<double>>& data, std::vector<double>&yTrue, int size) {
-	std::srand(static_cast<unsigned>(std::time(nullptr)));
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distribution(0, size-1);
+
 	int first = 0;
-	int second =0;
-	for (int i = 0; i < size; i++) {
-		first = std::rand() % (size);
-		second = std::rand() % (size);
-		std::swap(data[first], data[second]);
-		std::swap(yTrue[first], yTrue[second]);
-	}
+	for(int j=0;j<3;j++){
+        for (int i = 0; i < size; i++) {
+            first = distribution(gen);
+            std::swap(data[i], data[first]);
+            std::swap(yTrue[i], yTrue[first]);
+        }
+    }
 }
 std::vector<double> forwardProp(std::vector< std::unique_ptr<Layer>>& network, std::vector<double>& data) {
 	for (int layer = 0; layer < network.size(); layer++) {
@@ -345,7 +425,7 @@ void backProp(std::vector<std::unique_ptr<Layer>>& network, double loss, double 
 }
 void rollNodes(std::vector<std::unique_ptr<Layer>>& network) {
 	for (int i = 1; i < network.size(); i++) {
-		network.at(i).get()->rollActiveLayers();
+		network[i].get()->rollActiveLayers();
 	}
 }
 void shakeWeights(std::vector<std::unique_ptr<Layer>>& network, double lowShake, double highShake) {
@@ -353,4 +433,8 @@ void shakeWeights(std::vector<std::unique_ptr<Layer>>& network, double lowShake,
 	for (int i = 1; i < network.size(); i++) {
 		network[i].get()->shakeWeights(lowShake,highShake);
 	}
+}
+void resetNetworkWeightsAndBiases(std::vector<std::unique_ptr<Layer>>& dropOutNetwork) {
+	for (int i = 1; i < dropOutNetwork.size(); i++)
+		dropOutNetwork.at(i).get()->resetWeightsAndBias();
 }
