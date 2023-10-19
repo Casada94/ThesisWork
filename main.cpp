@@ -38,41 +38,42 @@ std::vector<std::string> splitString(const std::string& str, char delimiter);
 void shuffleRows(std::vector<std::vector<double>>& data, std::vector<double>& yTrue, int size);
 void shakeWeights(std::vector<std::unique_ptr<Layer>>& network,double lowShake,double highShake);
 
+float trainTestSplit =0.01;
+float trainValidSplit=0.5;
 
 int main() {
-    std::vector<int> fatLayerNodeCounts = { 8,10,5,1 };
-    std::vector<int> mixLayerNodeCounts = {8,20,10,1};
-    std::vector<int> dropOutLayerNodeCounts =	{ 8,20,10,1 };
+    std::vector<int> fatLayerNodeCounts = { 8,10,10,5,1 };
+    std::vector<int> mixLayerNodeCounts = {8,20,20,10,1};
+    std::vector<int> dropOutLayerNodeCounts =	{ 8,20,20,10,1 };
 //    std::vector<int> layerTypeDef = {0,1,0,0};
-	int epochs = 250;
+	int epochs = 1500;
 	double learningRate = .01;
 	int dropOutPercent = 20;
-    int groupSize = 2;
+    int groupSize = 5;
 	int layerDepth = 2;
 
 	std::vector<std::unique_ptr<Layer>> fatNetwork = createFatNetwork(fatLayerNodeCounts, layerDepth);
 	std::vector<std::unique_ptr<Layer>> dropOutNetwork = createDropOutNetwork(dropOutLayerNodeCounts, dropOutPercent);
     std::vector<std::unique_ptr<Layer>> mixedNetwork = createMixedNetwork(dropOutLayerNodeCounts, groupSize);
-
 //    std::vector<std::unique_ptr<Layer>> hybridNetwork = createHybridNetwork(fatLayerNodeCounts,layerTypeDef,layerDepth,dropOutPercent);
 
 	std::vector<std::vector<double>> input(20640,std::vector<double>(8,0));
 	std::vector<double> yTrue(20640,0);
-	readDataSet("C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\input\\housingData.csv", input);
-	readDataSet("C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\input\\housingDataTrueY.csv", yTrue);
+	readDataSet("C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\input\\housingData.csv", input);
+	readDataSet("C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\input\\housingDataTrueY.csv", yTrue);
 	
 	//ROUND 1
 	shuffleRows(input, yTrue, yTrue.size());
 
 	testFatNetwork(fatNetwork,epochs,learningRate,input,yTrue,
-		"C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\fatNode\\trainingLoss1.csv",
-		"C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\fatNode\\predictionOutput1.csv");
+		"C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\fatNode\\trainingLoss1.csv",
+		"C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\fatNode\\predictionOutput1.csv");
     testMixedNetwork(mixedNetwork, epochs, learningRate, input, yTrue,
-                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\mixed\\trainingLoss1.csv",
-                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\mixed\\predictionOutput1.csv");
-//    testDropOutNetwork(dropOutNetwork, epochs, learningRate, input, yTrue,
-//                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\dropOut\\trainingLoss1.csv",
-//                       "C:\\Users\\clayton\\Desktop\\Thesis\\ThesisWork\\output\\dropOut\\predictionOutput1.csv");
+                       "C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\mixed\\trainingLoss1.csv",
+                       "C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\mixed\\predictionOutput1.csv");
+    testDropOutNetwork(dropOutNetwork, epochs, learningRate, input, yTrue,
+                       "C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\dropOut\\trainingLoss1.csv",
+                       "C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\dropOut\\predictionOutput1.csv");
 
 
 }
@@ -156,8 +157,8 @@ void testFatNetwork(std::vector<std::unique_ptr<Layer>>& fatNetwork, int epochs,
 	double trainingLoss = 0.0;
 	double validLoss = 0.0;
 
-    int startOfTestIndex = (int)(input.size() * .75);
-	int startOfValidIndex = (int)(startOfTestIndex * .5);
+    int startOfTestIndex = (int)(input.size() * trainTestSplit);
+	int startOfValidIndex = (int)(startOfTestIndex * trainValidSplit);
 
     std::cout << std::fixed << std::setprecision(7);
     fatLayerTrainingFile << std::fixed << std::setprecision(7);
@@ -257,8 +258,8 @@ void testDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, int
     double trainingLoss = 0.0;
     double validLoss = 0.0;
 
-    int startOfTestIndex = (int)(input.size() * .75);
-    int startOfValidIndex = (int)(startOfTestIndex * .5);
+    int startOfTestIndex = (int)(input.size() * trainTestSplit);
+    int startOfValidIndex = (int)(startOfTestIndex * trainValidSplit);
 
     std::cout << std::fixed << std::setprecision(7);
     dropOutLayerTrainingFile << std::fixed << std::setprecision(7);
@@ -345,8 +346,8 @@ void testMixedNetwork(std::vector<std::unique_ptr<Layer>>& mixedNetwork, int epo
     double trainingLoss = 0.0;
     double validLoss = 0.0;
 
-    int startOfTestIndex = (int)(input.size() * .75);
-    int startOfValidIndex = (int)(startOfTestIndex * .5);
+    int startOfTestIndex = (int)(input.size() * trainTestSplit);
+    int startOfValidIndex = (int)(startOfTestIndex * trainValidSplit);
 
     std::cout << std::fixed << std::setprecision(7);
     mixedLayerTrainingFile << std::fixed << std::setprecision(7);

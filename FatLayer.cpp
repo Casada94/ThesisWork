@@ -19,11 +19,9 @@ FatLayer::FatLayer(int nodeCount, int previousLayerNodeCount, int layerDepth, in
     output = vector<double>(nodeCount, 0);
     this->activeLayer = vector<int>(nodeCount,1);
 
-    //std::srand(static_cast<unsigned>(std::time(nullptr)));
-	std::random_device rd;
-	std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distribution(1, 10000);
-    std::uniform_int_distribution<int> distribution2(0, 100);
+    this->gen = std::mt19937(rd());
+    this->distribution=std::uniform_int_distribution<int>(1, 10000);
+    this->distribution2=std::uniform_int_distribution<int>(0, 100);
 
     if (!isInputLayer) {
 		weights = std::vector < std::vector<std::vector<std::vector<double>>>>(layerDepth, vector < vector<vector<double>>>(layerDepth, vector < vector<double>>(previousLayerNodeCount, vector<double>(nodeCount,0.0))));
@@ -46,9 +44,9 @@ FatLayer::FatLayer(int nodeCount, int previousLayerNodeCount, int layerDepth, in
 
 //resets the weights and biases; used to reset the network for retraining
 void FatLayer::resetWeightsAndBias() {
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<int> distribution(1, 10000);
+//	std::random_device rd;
+//	std::mt19937 gen(rd());
+//	std::uniform_int_distribution<int> distribution(1, 10000);
 
 	int prevLayerNodeCount = this->previousLayer->getNodeCount();
 
@@ -66,9 +64,9 @@ void FatLayer::resetWeightsAndBias() {
 
 //randomly decides which subnode we will use in a 'fatNode'
 void FatLayer::rollActiveLayers() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distribution(0, 100);
+//    std::random_device rd;
+//    std::mt19937 gen(rd());
+//    std::uniform_int_distribution<int> distribution(0, 100);
 
     for (int & i : activeLayer) {
         i = distribution(gen) % (layerDepth);
@@ -160,9 +158,9 @@ void FatLayer::useAllNodes() {
 
 void FatLayer::shakeWeights(double lowShake, double highShake) {
 	int prevLayerNodeCount = this->previousLayer->getNodeCount();
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distribution(0, 100);
+//    std::random_device rd;
+//    std::mt19937 gen(rd());
+//    std::uniform_int_distribution<int> distribution(0, 100);
 
     for (int i = 0; i < this->layerDepth; i++) {  //from top or bottom
 		for (int j = 0; j < this->layerDepth; j++) {	//my top of bottom

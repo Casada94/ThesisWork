@@ -21,11 +21,9 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
     activeLayer = vector<int>(nodeCount,1);
     bias = vector<double>(nodeCount, 0);
 
-    //std::srand(static_cast<unsigned>(std::time(nullptr)));
-	std::random_device rd;
-	std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distribution(1, 10000);
-    std::uniform_int_distribution<int> distribution2(0, 100);
+    this->gen = std::mt19937(rd());
+    this->distribution=std::uniform_int_distribution<int>(1, 10000);
+    this->distribution2=std::uniform_int_distribution<int>(0, 100);
 
     if (!isInputLayer) {
 		weights = std::vector<std::vector<double>>(previousLayerNodeCount, vector<double>(nodeCount, 0.0));
@@ -46,10 +44,6 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
 
 //resets the weights and biases; used to reset the network for retraining
 void DropOutLayer::resetWeightsAndBias() {
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<int> distribution(1, 10000);
-
 	int prevLayerNodeCount = previousLayer->getNodeCount();
 
 	for (int k = 0; k < prevLayerNodeCount; k++) {
@@ -63,10 +57,6 @@ void DropOutLayer::resetWeightsAndBias() {
 
 //randomly decides which subnode we will use in a 'fatNode'
 void DropOutLayer::rollActiveLayers() {
-	std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distribution(0, 100);
-
     if(!isOutputLayer){
         for (int & i : activeLayer) {
             i = ((distribution(gen) % 100) < this->dropOutRate)?0:1;
@@ -173,9 +163,6 @@ double DropOutLayer::getPartDerivThrough(int fromNode, int fromNodeStack, double
 }
 void DropOutLayer::shakeWeights(double lowShake, double highShake) {
 	int prevLayerNodeCount = previousLayer->getNodeCount();
-	std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distribution(0, 100);
 
     for (int k = 0; k < prevLayerNodeCount; k++) {
 		for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B

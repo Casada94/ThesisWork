@@ -2,6 +2,7 @@
 #ifndef FAT_LAYER_H
 #define FAT_LAYER_H
 #include <vector>
+#include <random>
 #include "Layer.h"
 
 class FatLayer: public Layer {
@@ -13,7 +14,11 @@ private:
 	//			[ weights from all the prev layers nodes to one of my nodes ]
 	//			[ the node i am at now ]
 	std::vector<std::vector<double>> bias;
-	
+    std::random_device rd;
+    std::mt19937 gen;
+    std::uniform_int_distribution<int> distribution;
+    std::uniform_int_distribution<int> distribution2;
+
 public:
 	FatLayer(int nodeCount, int previousLayerNodeCount, int layerDepth, int activationFunctionSelected,bool isInputLayer,bool isOutputLayer);
 	void resetWeightsAndBias();

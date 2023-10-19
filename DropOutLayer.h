@@ -2,6 +2,7 @@
 #ifndef DROP_OUT_LAYER_H
 #define DROP_OUT_LAYER_H
 #include <vector>
+#include <random>
 #include "Layer.h"
 //#include <unordered_map>
 
@@ -14,6 +15,10 @@ private:
 	//			[ weights from all the prev layers nodes to one of my nodes ]
 	//			[ the node i am at now ]
 	std::vector<double> bias;
+    std::random_device rd;
+    std::mt19937 gen;
+    std::uniform_int_distribution<int> distribution;
+    std::uniform_int_distribution<int> distribution2;
 
 public:
 	DropOutLayer(int nodeCount, int previousLayerNodeCount, int activationFunctionSelected, int dropOutRate, bool isInputLayer, bool isOutputLayer);
