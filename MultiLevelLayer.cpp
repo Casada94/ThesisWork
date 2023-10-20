@@ -87,11 +87,12 @@ void MultiLevelLayer::forwardPropagation() {
             output[i] = activationFunction(sum + this->bias[i]) ;
         } else{
             output[i]=0;
-            continue;
+//            continue;
         }
     }
     if(isOutputLayer){
-        output[0] = output[0] + output[1];
+        for(int i=0; i< nodeCount;i++)
+            output[0] += output[i];
     }
 }
 
