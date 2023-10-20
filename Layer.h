@@ -26,7 +26,7 @@ public:
 	void setNextLayer(Layer* nextLayer);
 	virtual void resetWeightsAndBias();
 	virtual void rollActiveLayers();
-	void setOutput(std::vector<double>& rawInput);
+	virtual void setOutput(std::vector<double>& rawInput);
 	
 	virtual void updateAllWeights(double loss, double learningRate);
 	virtual void updateAllBiases(double loss, double learningRate);
