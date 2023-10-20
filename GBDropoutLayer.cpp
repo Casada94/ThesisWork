@@ -1,16 +1,20 @@
-#include "DropOutLayer.h"
+#include "GBDropoutLayer.h"
 #include <random>
 #include <iostream>
 
 using namespace std;
 
 //Constructor with minimum information needed to build layer
-DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activationFunctionSelected, int dropOutRate, bool isInputLayer, bool isOutputLayer) {
+GBDropoutLayer::GBDropoutLayer(int nodeCount, int previousLayerNodeCount, int activationFunctionSelected, int groupSize, bool isInputLayer, bool isOutputLayer) {
 	this->nodeCount = nodeCount;
 	this->activationFunctionSelected = activationFunctionSelected;
 	this->isInputLayer = isInputLayer;
 	this->isOutputLayer = isOutputLayer;
-	this->dropOutRate = dropOutRate;
+	this->groupSize = groupSize;
+
+    if(!isInputLayer && !isOutputLayer && nodeCount%groupSize != 0){
+        throw std::runtime_error("nodeCount is not a multiple of groupSize");
+    }
 
     output = vector<double>(nodeCount, 0);
     activeLayer = vector<int>(nodeCount,1);
@@ -31,19 +35,22 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
 	}
 
     if(!isInputLayer && !isOutputLayer){
-        for (int & i : activeLayer) {
-            i = ((distribution2(gen) % 100) < this->dropOutRate) ? 0:1;
+        for(int i=0;i<nodeCount;i+=groupSize){
+            activeLayer[i+(distribution2(gen) % groupSize)] = 0;
         }
     }
 }
 
-//iterates through array marking nodes as active/inactive given a inactive probability
-void DropOutLayer::rollActiveLayers() {
+//randomly decides which subnode we will use in a 'fatNode'
+void GBDropoutLayer::rollActiveLayers() {
     if(!isOutputLayer){
-        for (int & i : activeLayer) {
-            i = ((distribution(gen) % 100) < this->dropOutRate)?0:1;
+        int temp=0;
+        for (int i=0;i<activeLayer.size();i++) {
+            if(i%groupSize==0){
+                temp = i + distribution(gen) % groupSize;
+            }
+            activeLayer[i] = i==temp ? 0 : 1;
         }
     }
 }
-
 

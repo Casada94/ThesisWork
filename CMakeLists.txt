@@ -5,6 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(NetworkExperiments main.cpp
         DropOutLayer.cpp
-        FatLayer.cpp
         Layer.cpp
-        MixedLayer.cpp)
+        GBDropoutLayer.cpp
+        MultiLevelLayer.cpp)

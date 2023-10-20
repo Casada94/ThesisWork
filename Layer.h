@@ -2,7 +2,7 @@
 #ifndef LAYER_H
 #define LAYER_H
 #include <vector>
-#include <unordered_map>
+#include <random>
 
 class Layer {
 protected:
@@ -12,37 +12,38 @@ protected:
 	int activationFunctionSelected;
 	bool isInputLayer;
 	bool isOutputLayer;
-	std::vector<double> output;
+
+    std::vector<std::vector<double>> weights;
+    std::vector<double> bias;
+    std::vector<double> output;
 	std::vector<int>activeLayer;
-	//weights	[ level in stack of prev layer's node ]
-	//			[ level in stack of my layers node]
-	//			[ weights from all the prev layers nodes to one of my nodes ]
-	//			[ the node i am at now ]
-	//std::unordered_map<std::string, double> backPropCache;
+
+    std::random_device rd;
+    std::mt19937 gen;
+    std::uniform_int_distribution<int> distribution;
+    std::uniform_int_distribution<int> distribution2;
 
 public:
 	//Layer(int nodeCount, int previousLayerNodeCount, int activationFunctionSelected, bool isInputLayer, bool isOutputLayer);
-	void setPreviousLayer(Layer* previousLayer);
-	void setNextLayer(Layer* nextLayer);
-	virtual void resetWeightsAndBias();
+	void setPreviousLayer(Layer* prevLayer);
+	void setNextLayer(Layer* nxtLayer);
+	void resetWeightsAndBias();
 	virtual void rollActiveLayers();
 	virtual void setOutput(std::vector<double>& rawInput);
 	
 	virtual void updateAllWeights(double loss, double learningRate);
-	virtual void updateAllBiases(double loss, double learningRate);
-	virtual double getMyActPartDeriv(int index);
-	virtual double getPartDerivThrough(int fromNode, double loss);
-	virtual double getPartDerivThrough(int fromNode, int fromNodeStack, double loss);
+	void updateAllBiases(double loss, double learningRate);
+	double getMyActPartDeriv(int index);
+	double getPartDerivThrough(int fromNode, double loss);
+//	double getPartDerivThrough(int fromNode, int fromNodeStack, double loss);
 
-	virtual void forwardPropagation();
+	void forwardPropagation();
 	std::vector<double>& getOutput();
 	std::vector<int>& getActiveLayer();
-	//virtual int getActiveLayerAt(int x,int y);
-	double activationFunction(double sum);
-	int getNodeCount();
-	virtual void useAllNodes();
-	virtual void shakeWeights(double lowShake, double highShake);
-	//double getMyActPartDeriv(int index);
+	double activationFunction(double sum) const;
+	int getNodeCount() const;
+	void useAllNodes();
+	void shakeWeightsAndBiases(double delta);
 };
 
 #endif // DROP_OUT_LAYER_H
