@@ -64,7 +64,7 @@ int main() {
 
     std::vector<std::unique_ptr<Layer>> multiLevelNetwork = createMultiLevelNetwork(multiLevelLayerNodeCounts, layerDepth);
     std::vector<std::unique_ptr<Layer>> dropOutNetwork = createDropOutNetwork(dropOutLayerNodeCounts, dropOutPercent);
-    std::vector<std::unique_ptr<Layer>> mixedNetwork = createGBDropOutNetwork(dropOutLayerNodeCounts, groupSize);
+    std::vector<std::unique_ptr<Layer>> gbDropOutNetwork = createGBDropOutNetwork(gbDropOutLayerNodeCounts, groupSize);
 
 	std::vector<std::vector<double>> input(20640,std::vector<double>(8,0));
 	std::vector<double> yTrue(20640,0);
@@ -81,6 +81,7 @@ int main() {
                        "C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\mixed\\trainingLoss1.csv",
                        "C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\mixed\\predictionOutput1.csv");
     testDropOutNetwork(dropOutNetwork, epochs, learningRate, input, yTrue,
+	testGBDropOutNetwork(gbDropOutNetwork, input, yTrue,
                        "C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\dropOut\\trainingLoss1.csv",
                        "C:\\Users\\metal\\Desktop\\Bayesian Neural Network Research\\NetworkExperiments\\ThesisWork\\output\\dropOut\\predictionOutput1.csv");
     testMultiLevelNetwork(multiLevelNetwork,epochs,learningRate,input,yTrue,
@@ -89,149 +90,6 @@ int main() {
 
 
 }
-//HYBRID NETWORK
-//std::vector<std::unique_ptr<Layer>> createHybridNetwork(std::vector<int>& layerNodeCount, std::vector<int>& layerTypeDef, int layerDepth, int dropOutRate){
-//    std::vector<std::unique_ptr<Layer>> network;
-//    for (int i = 0; i < layerNodeCount.size(); i++) {
-//        if(layerTypeDef[i]){
-//            if (i == 0) {
-//                network.push_back(std::unique_ptr<Layer>(new FatLayer(layerNodeCount.at(i), 0, layerDepth,2, true, false)));
-//            }
-//            else if (i == layerNodeCount.size() - 1) {
-//                network.push_back(std::unique_ptr<Layer>(new FatLayer(layerNodeCount.at(i), layerNodeCount.at(i-1), layerDepth, 3, false, true)));
-//            }
-//            else {
-//                network.push_back(std::unique_ptr<Layer>(new FatLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), layerDepth, 0, false, false)));
-//            }
-//        } else{
-//            if (i == 0) {
-//                network.push_back(std::unique_ptr<Layer>(new DropOutLayer(layerNodeCount.at(i), 0, 2, dropOutRate, true, false)));
-//            }
-//            else if (i == layerNodeCount.size() - 1) {
-//                network.push_back(std::unique_ptr<Layer>(new DropOutLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), 3, dropOutRate, false, true)));
-//            }
-//            else {
-//                network.push_back(std::unique_ptr<Layer>(new DropOutLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), 0, dropOutRate, false, false)));
-//            }
-//        }
-//    }
-//    for (int i = 0; i < network.size(); i++) {
-//        if (i == 0) {
-//            network.at(i).get()->setNextLayer(network.at(i+1).get());
-//        }
-//        else if (i == network.size() - 1) {
-//            network.at(i).get()->setPreviousLayer(network.at(i - 1).get());
-//        }
-//        else {
-//            network.at(i).get()->setNextLayer(network.at(i + 1).get());
-//            network.at(i).get()->setPreviousLayer(network.at(i - 1).get());
-//        }
-//    }
-//    return network;
-//
-//}
-
-
-// FAT LAYER METHODS
-//std::vector<std::unique_ptr<Layer>> createFatNetwork(std::vector<int>& layerNodeCount, int layerDepth) {
-//    std::vector<std::unique_ptr<Layer>> network;
-//    for (int i = 0; i < layerNodeCount.size(); i++) {
-//        if (i == 0) {
-//            network.push_back(std::unique_ptr<Layer>(new FatLayer(layerNodeCount.at(i), 0, layerDepth,2, true, false)));
-//        }
-//        else if (i == layerNodeCount.size() - 1) {
-//            network.push_back(std::unique_ptr<Layer>(new FatLayer(layerNodeCount.at(i), layerNodeCount.at(i-1), layerDepth, 3, false, true)));
-//        }
-//        else {
-//            network.push_back(std::unique_ptr<Layer>(new FatLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), layerDepth, 0, false, false)));
-//        }
-//    }
-//    for (int i = 0; i < network.size(); i++) {
-//        if (i == 0) {
-//            network.at(i).get()->setNextLayer(network.at(i+1).get());
-//        }
-//        else if (i == network.size() - 1) {
-//            network.at(i).get()->setPreviousLayer(network.at(i - 1).get());
-//        }
-//        else {
-//            network.at(i).get()->setNextLayer(network.at(i + 1).get());
-//            network.at(i).get()->setPreviousLayer(network.at(i - 1).get());
-//        }
-//    }
-//    return network;
-//}
-//void testFatNetwork(std::vector<std::unique_ptr<Layer>>& fatNetwork, int epochs, double learningRate, std::vector<std::vector<double>>& input, std::vector<double>& yTrue,std::string trainingFile,std::string predictFile) {
-//    std::ofstream fatLayerTrainingFile(trainingFile);
-//    std::ofstream fatLayerTestingFile(predictFile);
-//
-//    double yHat = 0.0;
-//    double loss = 0;
-//    double trainingLoss = 0.0;
-//    double validLoss = 0.0;
-//
-//    int startOfTestIndex = (int)(input.size() * trainTestSplit);
-//    int startOfValidIndex = (int)(startOfTestIndex * trainValidSplit);
-//
-//    std::cout << std::fixed << std::setprecision(7);
-//    fatLayerTrainingFile << std::fixed << std::setprecision(7);
-//    fatLayerTestingFile << std::fixed << std::setprecision(12);
-//
-//    for (int i = 0; i < epochs; i++) {
-//        trainingLoss = 0;
-//        for (int j = 0; j < startOfValidIndex; j++) {
-//            yHat = forwardProp(fatNetwork, input[j])[0];
-//            loss = 2 * (yHat - yTrue[j]);
-//            trainingLoss += std::pow((yHat - yTrue[j]), 2);
-//            backProp(fatNetwork, loss, learningRate);
-//            rollNodes(fatNetwork);
-//        }
-//        validLoss = 0;
-//        for (int j = startOfValidIndex; j < startOfTestIndex; j++) {
-//            yHat = forwardProp(fatNetwork, input[j])[0];
-//            validLoss += std::pow((yHat - yTrue[j]), 2);
-//            rollNodes(fatNetwork);
-//        }
-//        trainingLoss /= startOfValidIndex;
-//        validLoss /= (startOfTestIndex - startOfValidIndex);
-//        std::cout  << "Epoch: " << i << "\t" << "Training Loss: " << trainingLoss<< "\t" << "Valid Loss: " << validLoss << std::endl;
-//        fatLayerTrainingFile  << trainingLoss << "," << validLoss  << "\n";
-//    }
-//
-//    loss = 0;
-//    //double yHatOnce = 0;
-//    double first =0;
-//    double second =0;
-//    double third=0;
-//    double onceLoss = 0;
-//    yHat=0;
-//    for (int j = startOfTestIndex; j < input.size(); j++) {
-//        rollNodes(fatNetwork);
-//        first = forwardProp(fatNetwork, input[j])[0];
-//
-//        rollNodes(fatNetwork);
-//        second = forwardProp(fatNetwork, input[j])[0];
-//
-//        rollNodes(fatNetwork);
-//        third = forwardProp(fatNetwork, input[j])[0];
-//
-//        yHat = (first+second+third)/3;
-//        loss += std::pow((yHat - yTrue[j]), 2);
-//        onceLoss += std::pow((first - yTrue[j]), 2);
-//
-////        fatLayerTestingFile << yHat << "," << yHatOnce << "," << yTrue[j] << "\n";
-//        fatLayerTestingFile << first << "," << second << "," << third << "," << yTrue[j] << "\n";
-//
-//    }
-//
-//    std::cout << loss << std::endl;
-//    std::cout << onceLoss << std::endl;
-//    std::cout << std::fixed << std::setprecision(7) << "3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
-////	fatLayerTestingFile << loss << "," << onceLoss << "," << "00" << "\n";
-//    fatLayerTestingFile << loss << "," << onceLoss << "," << "00" << "," << "00" << "\n";
-//
-//    fatLayerTrainingFile.close();
-//    fatLayerTestingFile.close();
-//}
 
 // MultiLevel LAYER METHODS
 std::vector<std::unique_ptr<Layer>> createMultiLevelNetwork(std::vector<int>& layerNodeCount, int levelSize) {
@@ -276,6 +134,7 @@ void testMultiLevelNetwork(std::vector<std::unique_ptr<Layer>>& multiLevelNetwor
     std::cout << std::fixed << std::setprecision(7);
     multiLevelLayerTrainingFile << std::fixed << std::setprecision(7);
     multiLevelLayerTestingFile << std::fixed << std::setprecision(12);
+    std::cout  << "----------Multi Level Network----------" << std::endl;
 
     for (int i = 0; i < epochs; i++) {
         trainingLoss = 0;
@@ -329,11 +188,121 @@ void testMultiLevelNetwork(std::vector<std::unique_ptr<Layer>>& multiLevelNetwor
 
     std::cout << loss << std::endl;
     std::cout << onceLoss << std::endl;
-    std::cout << std::fixed << std::setprecision(7) << "3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
+    std::cout << std::fixed << std::setprecision(7) << "     ML = 3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "   1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
     multiLevelLayerTestingFile << loss << "," << onceLoss << "," << "00" << "," << "00" << "\n";
 
     multiLevelLayerTrainingFile.close();
     multiLevelLayerTestingFile.close();
+}
+
+//GROUP BASED DROPOUT NETWORK
+std::vector<std::unique_ptr<Layer>> createGBDropOutNetwork(std::vector<int>& layerNodeCount, int groupSize) {
+    std::vector<std::unique_ptr<Layer>> network;
+    for (int i = 0; i < layerNodeCount.size(); i++) {
+        if (i == 0) {
+            network.push_back(std::unique_ptr<Layer>(new GBDropoutLayer(layerNodeCount.at(i), 0, inputLayerAF, groupSize, true, false)));
+        }
+        else if (i == layerNodeCount.size() - 1) {
+            network.push_back(std::unique_ptr<Layer>(new GBDropoutLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), outputLayerAF, groupSize, false, true)));
+        }
+        else {
+            network.push_back(std::unique_ptr<Layer>(new GBDropoutLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), hiddenLayerAF, groupSize, false, false)));
+        }
+    }
+    for (int i = 0; i < network.size(); i++) {
+        if (i == 0) {
+            network.at(i)->setNextLayer(network.at(i + 1).get());
+        }
+        else if (i == network.size() - 1) {
+            network.at(i)->setPreviousLayer(network.at(i - 1).get());
+        }
+        else {
+            network.at(i)->setNextLayer(network.at(i + 1).get());
+            network.at(i)->setPreviousLayer(network.at(i - 1).get());
+        }
+    }
+    return network;
+}
+void testGBDropOutNetwork(std::vector<std::unique_ptr<Layer>>& gbDropOutNetwork, std::vector<std::vector<double>>& input, std::vector<double>& yTrue, std::string trainingFile, std::string predictFile) {
+    std::ofstream gbDropOutLayerTrainingFile(trainingFile);
+    std::ofstream gbDropOutLayerTestingFile(predictFile);
+
+    double yHat = 0.0;
+    double loss = 0;
+    double trainingLoss = 0.0;
+    double validLoss = 0.0;
+
+    int startOfTestIndex = (int)(input.size() * trainTestSplit);
+    int startOfValidIndex = (int)(startOfTestIndex * trainValidSplit);
+
+    std::cout << std::fixed << std::setprecision(7);
+    gbDropOutLayerTrainingFile << std::fixed << std::setprecision(7);
+    gbDropOutLayerTestingFile << std::fixed << std::setprecision(12);
+    std::cout  << "----------Group Based Dropout Network----------" << std::endl;
+
+    for (int i = 0; i < epochs; i++) {
+        trainingLoss = 0;
+
+        //TRAINING
+        for (int j = 0; j < startOfValidIndex; j++) {
+            yHat = forwardProp(gbDropOutNetwork, input[j])[0];
+            loss = 2 * (yHat - yTrue[j]);
+            trainingLoss += std::pow((yHat - yTrue[j]), 2);
+            backProp(gbDropOutNetwork, loss);
+            rollNodes(gbDropOutNetwork);
+        }
+
+        if(useAllNodesGBD){
+            activateAllNodes(gbDropOutNetwork);
+        }
+
+        validLoss = 0;
+        //VALIDATION
+        for (int j = startOfValidIndex; j < startOfTestIndex; j++) {
+            if(!useAllNodesGBD){
+                rollNodes(gbDropOutNetwork);
+            }
+
+            yHat = forwardProp(gbDropOutNetwork, input[j])[0];
+            validLoss += std::pow((yHat - yTrue[j]), 2);
+        }
+
+        trainingLoss /= startOfValidIndex;
+        validLoss /= (startOfTestIndex - startOfValidIndex);
+        std::cout << "Epoch: " << i << "\t" << "Training Loss: " << trainingLoss << "\t" << "Valid Loss: " << validLoss << std::endl;
+        gbDropOutLayerTrainingFile << trainingLoss << "," << validLoss << "\n";
+    }
+
+    loss = 0;
+
+    std::vector<double> yHatMult = std::vector<double>(3,0);
+    double sum=0;
+    double onceLoss = 0;
+    yHat=0;
+    //TESTING
+    for (int j = startOfTestIndex; j < input.size(); j++) {
+        for(int i=0;i<3;i++){
+            if(!useAllNodesGBD){
+                rollNodes(gbDropOutNetwork);
+            }
+
+            yHatMult[i] = forwardProp(gbDropOutNetwork, input[j])[0];
+            sum+=yHatMult[i];
+        }
+
+        yHat = sum/3;
+        loss += std::pow((yHat - yTrue[j]), 2);
+        onceLoss += std::pow((yHatMult[0] - yTrue[j]), 2);
+        sum=0;
+        gbDropOutLayerTestingFile << yHatMult[0] << "," << yHatMult[1] << "," << yHatMult[2] << "," << yTrue[j] << "\n";
+    }
+    std::cout << loss << std::endl;
+    std::cout << onceLoss << std::endl;
+    std::cout << "GBDO = 3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
+    gbDropOutLayerTestingFile << loss << "," << onceLoss << "," << "00" << "," << "00"<< "\n";
+
+    gbDropOutLayerTrainingFile.close();
+    gbDropOutLayerTestingFile.close();
 }
 
 //DROP OUT LAYER METHODS
@@ -370,6 +339,7 @@ void testDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, std
     std::cout << std::fixed << std::setprecision(7);
     dropOutLayerTrainingFile << std::fixed << std::setprecision(7);
     dropOutLayerTestingFile << std::fixed << std::setprecision(12);
+    std::cout  << "----------Standard Dropout Network----------" << std::endl;
 
     double yHat = 0.0;
     double loss = 0;
@@ -422,7 +392,7 @@ void testDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, std
     }
     std::cout << loss << std::endl;
     std::cout << onceLoss << std::endl;
-    std::cout << "3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
+    std::cout << "     DO = 3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "   1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
 
     dropOutLayerTestingFile << loss << "," << onceLoss << "," << "00" << "\n";
 
@@ -430,113 +400,43 @@ void testDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, std
     dropOutLayerTestingFile.close();
 }
 
-//GROUP BASED DROPOUT NETWORK
-std::vector<std::unique_ptr<Layer>> createGBDropOutNetwork(std::vector<int>& layerNodeCount, int groupSize) {
-    std::vector<std::unique_ptr<Layer>> network;
-    for (int i = 0; i < layerNodeCount.size(); i++) {
-        if (i == 0) {
-            network.push_back(std::unique_ptr<Layer>(new GBDropoutLayer(layerNodeCount.at(i), 0, inputLayerAF, groupSize, true, false)));
-        }
-        else if (i == layerNodeCount.size() - 1) {
-            network.push_back(std::unique_ptr<Layer>(new GBDropoutLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), outputLayerAF, groupSize, false, true)));
-        }
-        else {
-            network.push_back(std::unique_ptr<Layer>(new GBDropoutLayer(layerNodeCount.at(i), layerNodeCount.at(i - 1), hiddenLayerAF, groupSize, false, false)));
-        }
-    }
-    for (int i = 0; i < network.size(); i++) {
-        if (i == 0) {
-            network.at(i)->setNextLayer(network.at(i + 1).get());
-        }
-        else if (i == network.size() - 1) {
-            network.at(i)->setPreviousLayer(network.at(i - 1).get());
-        }
-        else {
-            network.at(i)->setNextLayer(network.at(i + 1).get());
-            network.at(i)->setPreviousLayer(network.at(i - 1).get());
-        }
-    }
-    return network;
-}
-void testGBDropOutNetwork(std::vector<std::unique_ptr<Layer>>& gbDropOutNetwork, std::vector<std::vector<double>>& input, std::vector<double>& yTrue, std::string trainingFile, std::string predictFile) {
-    std::ofstream gbDropOutLayerTrainingFile(trainingFile);
-    std::ofstream gbDropOutLayerTestingFile(predictFile);
-
-    double yHat = 0.0;
-    double loss = 0;
-    double trainingLoss = 0.0;
-    double validLoss = 0.0;
-
-    int startOfTestIndex = (int)(input.size() * trainTestSplit);
-    int startOfValidIndex = (int)(startOfTestIndex * trainValidSplit);
-
-    std::cout << std::fixed << std::setprecision(7);
-    gbDropOutLayerTrainingFile << std::fixed << std::setprecision(7);
-    gbDropOutLayerTestingFile << std::fixed << std::setprecision(12);
-
-    for (int i = 0; i < epochs; i++) {
-        trainingLoss = 0;
-
-        for (int j = 0; j < startOfValidIndex; j++) {
-            yHat = forwardProp(gbDropOutNetwork, input[j])[0];
-            loss = 2 * (yHat - yTrue[j]);
-            trainingLoss += std::pow((yHat - yTrue[j]), 2);
-            backProp(gbDropOutNetwork, loss);
-            rollNodes(gbDropOutNetwork);
-        }
-
-        if(useAllNodesGBD){
-            activateAllNodes(gbDropOutNetwork);
-        }
-
-        validLoss = 0;
-        for (int j = startOfValidIndex; j < startOfTestIndex; j++) {
-            if(!useAllNodesGBD){
-                rollNodes(gbDropOutNetwork);
-            }
-
-            yHat = forwardProp(gbDropOutNetwork, input[j])[0];
-            validLoss += std::pow((yHat - yTrue[j]), 2);
-        }
-
-        trainingLoss /= startOfValidIndex;
-        validLoss /= (startOfTestIndex - startOfValidIndex);
-        std::cout << "Epoch: " << i << "\t" << "Training Loss: " << trainingLoss << "\t" << "Valid Loss: " << validLoss << std::endl;
-        mixedLayerTrainingFile << trainingLoss << "," << validLoss << "\n";
-    }
-
-    loss = 0;
-
-    std::vector<double> yHatMult = std::vector<double>(3,0);
-    double sum=0;
-    double onceLoss = 0;
-    yHat=0;
-    for (int j = startOfTestIndex; j < input.size(); j++) {
-        for(int i=0;i<3;i++){
-            if(!useAllNodesGBD){
-                rollNodes(gbDropOutNetwork);
-            }
-
-            yHatMult[i] = forwardProp(gbDropOutNetwork, input[j])[0];
-            sum+=yHatMult[i];
-        }
-
-        yHat = sum/3;
-        loss += std::pow((yHat - yTrue[j]), 2);
-        onceLoss += std::pow((yHatMult[0] - yTrue[j]), 2);
-        sum=0;
-        gbDropOutLayerTestingFile << yHatMult[0] << "," << yHatMult[1] << "," << yHatMult[2] << "," << yTrue[j] << "\n";
-    }
-    std::cout << loss << std::endl;
-    std::cout << onceLoss << std::endl;
-    std::cout << "3 Pass Test Loss: " << loss / (input.size() - startOfTestIndex) << "\t" << "1 Pass Test Loss: " << onceLoss / (input.size() - startOfTestIndex) << std::endl;
-    gbDropOutLayerTestingFile << loss << "," << onceLoss << "," << "00" << "," << "00"<< "\n";
-
-    gbDropOutLayerTrainingFile.close();
-    gbDropOutLayerTestingFile.close();
-}
 
 //SHARED METHODS
+std::vector<double> forwardProp(std::vector< std::unique_ptr<Layer>>& network, std::vector<double>& data) {
+    for (int layer = 0; layer < network.size(); layer++) {
+        if (layer == 0)
+            network.at(layer).get()->setOutput(data);
+        else
+            network.at(layer).get()->forwardPropagation();
+    }
+    return network.at(network.size() - 1).get()->getOutput();
+}
+void backProp(std::vector<std::unique_ptr<Layer>>& network, double loss) {
+    for (int layer = 1; layer < network.size(); layer++) {
+        network.at(layer).get()->updateAllBiases(loss, learningRate);
+        network.at(layer).get()->updateAllWeights(loss, learningRate);
+    }
+}
+void rollNodes(std::vector<std::unique_ptr<Layer>>& network) {
+    for (int i = 0; i < network.size(); i++) {
+        network[i].get()->rollActiveLayers();
+    }
+}
+void activateAllNodes(std::vector<std::unique_ptr<Layer>>& dropOutNetwork) {
+    for (int i = 0; i < dropOutNetwork.size(); i++)
+        dropOutNetwork.at(i).get()->useAllNodes();
+}
+void shakeNetworkWeightsAndBiases(std::vector<std::unique_ptr<Layer>>& network, double delta) {
+    for (int i = 1; i < network.size(); i++) {
+        network[i].get()->shakeWeightsAndBiases(delta);
+    }
+}
+void resetNetworkWeightsAndBiases(std::vector<std::unique_ptr<Layer>>& dropOutNetwork) {
+    for (int i = 1; i < dropOutNetwork.size(); i++)
+        dropOutNetwork.at(i).get()->resetWeightsAndBias();
+}
+
+
 void readDataSet(std::string filename, std::vector<std::vector<double>>& input) {
 	std::ifstream file(filename);  // Open the file
 
@@ -620,39 +520,6 @@ void shuffleRows(std::vector<std::vector<double>>& data, std::vector<double>&yTr
             std::swap(yTrue[i], yTrue[first]);
         }
     }
-}
-std::vector<double> forwardProp(std::vector< std::unique_ptr<Layer>>& network, std::vector<double>& data) {
-	for (int layer = 0; layer < network.size(); layer++) {
-		if (layer == 0)
-			network.at(layer).get()->setOutput(data);
-		else
-			network.at(layer).get()->forwardPropagation();
-	}
-	return network.at(network.size() - 1).get()->getOutput();
-}
-void backProp(std::vector<std::unique_ptr<Layer>>& network, double loss) {
-	for (int layer = 1; layer < network.size(); layer++) {
-		network.at(layer).get()->updateAllBiases(loss, learningRate);
-		network.at(layer).get()->updateAllWeights(loss, learningRate);
-	}
-}
-void rollNodes(std::vector<std::unique_ptr<Layer>>& network) {
-	for (int i = 1; i < network.size(); i++) {
-		network[i].get()->rollActiveLayers();
-	}
-}
-void activateAllNodes(std::vector<std::unique_ptr<Layer>>& dropOutNetwork) {
-    for (int i = 1; i < dropOutNetwork.size(); i++)
-        dropOutNetwork.at(i).get()->useAllNodes();
-}
-void shakeNetworkWeightsAndBiases(std::vector<std::unique_ptr<Layer>>& network, double delta) {
-	for (int i = 1; i < network.size(); i++) {
-		network[i].get()->shakeWeightsAndBiases(delta);
-	}
-}
-void resetNetworkWeightsAndBiases(std::vector<std::unique_ptr<Layer>>& dropOutNetwork) {
-	for (int i = 1; i < dropOutNetwork.size(); i++)
-		dropOutNetwork.at(i).get()->resetWeightsAndBias();
 }
 
 
