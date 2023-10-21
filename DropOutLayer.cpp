@@ -17,7 +17,7 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
 
     this->gen = std::mt19937(rd());
     this->distribution=std::uniform_int_distribution<int>(1, 10000);
-    this->distribution2=std::uniform_int_distribution<int>(0, 100);
+    this->distribution2=std::uniform_int_distribution<int>(0, 99);
 
     if (!isInputLayer) {
 		weights = std::vector<std::vector<double>>(previousLayerNodeCount, vector<double>(nodeCount, 0.0));
@@ -32,7 +32,7 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
 
     if(!isInputLayer && !isOutputLayer){
         for (int & i : activeLayer) {
-            i = ((distribution2(gen) % 100) < this->dropOutRate) ? 0:1;
+            i = (distribution2(gen) < this->dropOutRate) ? 0:1;
         }
     }
 }
@@ -41,8 +41,19 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
 void DropOutLayer::rollActiveLayers() {
     if(!isOutputLayer){
         for (int & i : activeLayer) {
-            i = ((distribution(gen) % 100) < this->dropOutRate)?0:1;
+            i = (distribution2(gen) < this->dropOutRate) ? 0:1;
         }
+    }
+}
+
+void DropOutLayer::scaleWeights(){
+    int prevLayerNodeCount = previousLayer->getNodeCount();
+
+    for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
+        for (int k = 0; k < prevLayerNodeCount; k++) {
+            weights[k][l] *= 1-(double)(dropOutRate/100);
+        }
+        bias[l] *= 1-(double)(dropOutRate/100);
     }
 }
 

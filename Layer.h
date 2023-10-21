@@ -43,6 +43,7 @@ public:
 	double activationFunction(double sum) const;
 	int getNodeCount() const;
 	void useAllNodes();
+    virtual void scaleWeights();
 	void shakeWeightsAndBiases(double delta);
 };
 

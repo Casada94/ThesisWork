@@ -149,4 +149,5 @@ void Layer::shakeWeightsAndBiases(double delta) {
 
 //METHODS WITHOUT ACTUAL IMPLEMENTATIONS
 void Layer::rollActiveLayers() {}
+void Layer::scaleWeights() {};
 

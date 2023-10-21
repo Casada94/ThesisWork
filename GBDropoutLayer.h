@@ -13,6 +13,7 @@ private:
 public:
 	GBDropoutLayer(int nodeCount, int previousLayerNodeCount, int activationFunctionSelected, int groupSize, bool isInputLayer, bool isOutputLayer);
 	void rollActiveLayers() override;
+    void scaleWeights() override;
 };
 
 #endif // MIXED_LAYER_H

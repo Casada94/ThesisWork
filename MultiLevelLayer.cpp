@@ -18,7 +18,7 @@ MultiLevelLayer::MultiLevelLayer(int nodeCount, int previousLayerNodeCount, int 
 
     this->gen = std::mt19937(rd());
     this->distribution=std::uniform_int_distribution<int>(1, 10000);
-    this->distribution2=std::uniform_int_distribution<int>(0, 100);
+    this->distribution2=std::uniform_int_distribution<int>(0, 99);
 
     if (!isInputLayer) {
         weights = std::vector<std::vector<double>>(previousLayerNodeCount, vector<double>(this->nodeCount, 0.0));
@@ -41,7 +41,7 @@ void MultiLevelLayer::rollActiveLayers() {
     int temp=0;
     for (int i=0;i<activeLayer.size();i++) {
         if(i%levelSize==0){
-            temp = i + distribution(gen) % levelSize;
+            temp = i + distribution2(gen) % levelSize;
         }
         activeLayer[i] = i==temp ? 1 : 0;
     }

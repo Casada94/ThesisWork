@@ -31,6 +31,8 @@ void testGBDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, s
 std::vector<double> forwardProp(std::vector< std::unique_ptr<Layer>>& network, std::vector<double>& data);
 void backProp(std::vector<std::unique_ptr<Layer>>& network, double loss);
 void resetNetworkWeightsAndBiases(std::vector<std::unique_ptr<Layer>>& network);
+void scaleAllWeights(std::vector<std::unique_ptr<Layer>>& gbDropOutNetwork);
+
 void rollNodes(std::vector<std::unique_ptr<Layer>>& dropOutNetwork);
 void readDataSet(std::string filename, std::vector<std::vector<double>>& input);
 void readDataSet(std::string filename, std::vector<double>& yTrue);
@@ -280,6 +282,7 @@ void testGBDropOutNetwork(std::vector<std::unique_ptr<Layer>>& gbDropOutNetwork,
     double onceLoss = 0;
     yHat=0;
     //TESTING
+    scaleAllWeights(gbDropOutNetwork);
     for (int j = startOfTestIndex; j < input.size(); j++) {
         for(int i=0;i<3;i++){
             if(!useAllNodesGBD){
@@ -379,6 +382,7 @@ void testDropOutNetwork(std::vector<std::unique_ptr<Layer>>& dropOutNetwork, std
     loss = 0;
     double yHatOnce = 0;
     double onceLoss = 0;
+    scaleAllWeights(dropOutNetwork);
     for (int j = startOfTestIndex; j < input.size(); j++) {
         if(!useAllNodesDrop){
             rollNodes(dropOutNetwork);
@@ -425,6 +429,11 @@ void rollNodes(std::vector<std::unique_ptr<Layer>>& network) {
 void activateAllNodes(std::vector<std::unique_ptr<Layer>>& dropOutNetwork) {
     for (int i = 0; i < dropOutNetwork.size(); i++)
         dropOutNetwork.at(i).get()->useAllNodes();
+}
+void scaleAllWeights(std::vector<std::unique_ptr<Layer>>& gbDropOutNetwork){
+    for(int i=1; i<gbDropOutNetwork.size();i++){
+        gbDropOutNetwork.at(i)->scaleWeights();
+    }
 }
 void shakeNetworkWeightsAndBiases(std::vector<std::unique_ptr<Layer>>& network, double delta) {
     for (int i = 1; i < network.size(); i++) {

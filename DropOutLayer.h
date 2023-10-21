@@ -13,6 +13,7 @@ private:
 public:
 	DropOutLayer(int nodeCount, int previousLayerNodeCount, int activationFunctionSelected, int dropOutRate, bool isInputLayer, bool isOutputLayer);
     void rollActiveLayers() override;
+    void scaleWeights() override;
 };
 
 #endif // DROP_OUT_LAYER_H
