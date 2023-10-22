@@ -37,7 +37,7 @@ public:
 	double getPartDerivThrough(int fromNode, double loss);
 //	double getPartDerivThrough(int fromNode, int fromNodeStack, double loss);
 
-	void forwardPropagation();
+	void forwardPropagation(double scalingFactor);
 	std::vector<double>& getOutput();
 	std::vector<int>& getActiveLayer();
 	double activationFunction(double sum) const;

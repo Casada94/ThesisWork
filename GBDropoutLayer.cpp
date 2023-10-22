@@ -56,12 +56,12 @@ void GBDropoutLayer::rollActiveLayers() {
 
 void GBDropoutLayer::scaleWeights() {
     int prevLayerNodeCount = previousLayer->getNodeCount();
-
+    double scalingFactor=((double)(groupSize-1)/groupSize);
     for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
         for (int k = 0; k < prevLayerNodeCount; k++) {
-            weights[k][l] *= (double)((groupSize-1)/groupSize);
+            weights[k][l] *= scalingFactor;
         }
-        bias[l] *= (double)((groupSize-1)/groupSize);
+        bias[l] *= scalingFactor;
     }
 }
 

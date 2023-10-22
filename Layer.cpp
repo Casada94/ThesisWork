@@ -26,7 +26,7 @@ std::vector<double>& Layer::getOutput() {
 	return output;
 }
 
-void Layer::forwardPropagation() {
+void Layer::forwardPropagation(double scalingFactor) {
     double sum;
     std::vector<double>& input = previousLayer->getOutput();
 
@@ -34,9 +34,9 @@ void Layer::forwardPropagation() {
         sum=0;
         if(activeLayer[i]){
             for (int j = 0; j < input.size(); j++) {
-                sum += weights[j][i] * input.at(j);
+                sum += weights[j][i] * input.at(j) ;
             }
-            output[i] = activationFunction(sum + bias[i]) ;
+            output[i] = activationFunction(sum* scalingFactor + bias[i]) ;
         } else{
             output[i]=0;
         }

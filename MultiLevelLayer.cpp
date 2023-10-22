@@ -59,3 +59,18 @@ void MultiLevelLayer::setOutput(std::vector<double>& input) {
         }
     }
 }
+
+void MultiLevelLayer::scaleWeights() {
+
+    int previousLayerNodeCount = previousLayer->getNodeCount();
+
+    for (int l = 0; l < this->nodeCount; l++) {
+        for (int k = 0; k < previousLayerNodeCount; k++) {	//all the weights from T/B to my T/B
+//            weights[k][l] *= (double)(1.0 / levelSize);
+            weights[k][l] *= 0.25;
+        }
+//        bias[l] *= (double)(1.0 / levelSize);
+        bias[l] *= 0.25;
+    }
+
+}
