@@ -34,9 +34,9 @@ void Layer::forwardPropagation(double scalingFactor) {
         sum=0;
         if(activeLayer[i]){
             for (int j = 0; j < input.size(); j++) {
-                sum += weights[j][i] * input.at(j) ;
+                sum += weights[j][i] * input.at(j)* scalingFactor  ;
             }
-            output[i] = activationFunction(sum* scalingFactor + bias[i]) ;
+            output[i] = activationFunction(sum+ bias[i]) ;
         } else{
             output[i]=0;
         }

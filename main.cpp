@@ -14,7 +14,7 @@
 //std::vector<std::unique_ptr<Layer>> createHybridNetwork(std::vector<int>& layerNodeCount, std::vector<int>& layerTypeDef, int layerDepth, int dropOutRate);
 
 //MultiLevelLayer Methods
-std::vector<std::unique_ptr<Layer>> createMultiLevelNetwork(std::vector<int>& layerNodeCount, int layerDepth);
+std::vector<std::unique_ptr<Layer>> createMultiLevelNetwork(std::vector<int>& layerNodeCount, int levelSize);
 void testMultiLevelNetwork(std::vector<std::unique_ptr<Layer>>& multiLevelNetwork, std::vector<std::vector<double>>& input, std::vector<double>& yTrue, std::string trainingFile, std::string predictFile);
 
 //DropOutLayer Methods
@@ -53,17 +53,17 @@ int hiddenLayerAF = 0;
 int outputLayerAF = 3;
 
 int main() {
-    std::vector<int> multiLevelLayerNodeCounts = { 8,10,5,1 };
-    std::vector<int> mixLayerNodeCounts = {8,20,10,1};
-    std::vector<int> dropOutLayerNodeCounts =	{ 8,20,10,1 };
+    std::vector<int> multiLevelLayerNodeCounts = { 8,8,5,1 };
+    std::vector<int> gbDropOutLayerNodeCounts = {8,15,10,1};
+    std::vector<int> dropOutLayerNodeCounts =	{ 8,15,10,1 };
 
 	int dropOutPercent = 20;
     int groupSize = 5;
 	int layerDepth = 2;
 
     std::vector<std::unique_ptr<Layer>> multiLevelNetwork = createMultiLevelNetwork(multiLevelLayerNodeCounts, layerDepth);
-    std::vector<std::unique_ptr<Layer>> dropOutNetwork = createDropOutNetwork(dropOutLayerNodeCounts, dropOutPercent);
     std::vector<std::unique_ptr<Layer>> gbDropOutNetwork = createGBDropOutNetwork(gbDropOutLayerNodeCounts, groupSize);
+    std::vector<std::unique_ptr<Layer>> dropOutNetwork = createDropOutNetwork(dropOutLayerNodeCounts, dropOutPercent);
 
 	std::vector<std::vector<double>> input(20640,std::vector<double>(8,0));
 	std::vector<double> yTrue(20640,0);
