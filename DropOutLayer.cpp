@@ -30,7 +30,7 @@ DropOutLayer::DropOutLayer(int nodeCount, int previousLayerNodeCount, int activa
 		}
 	}
 
-    if(!isInputLayer && !isOutputLayer){
+    if(!isOutputLayer){
         for (int & i : activeLayer) {
             i = (distribution2(gen) < this->dropOutRate) ? 0:1;
         }
@@ -47,13 +47,15 @@ void DropOutLayer::rollActiveLayers() {
 }
 
 void DropOutLayer::scaleWeights(){
-    int prevLayerNodeCount = previousLayer->getNodeCount();
-    double scalingFactor = 1-(double)((double)dropOutRate/100);
-    for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
-        for (int k = 0; k < prevLayerNodeCount; k++) {
-            weights[k][l] *= scalingFactor;
+    if(!isInputLayer){
+        int prevLayerNodeCount = previousLayer->getNodeCount();
+        double scalingFactor = 1-(double)((double)dropOutRate/100);
+        for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
+            for (int k = 0; k < prevLayerNodeCount; k++) {
+                weights[k][l] *= scalingFactor;
+            }
+            bias[l] *= scalingFactor;
         }
-        bias[l] *= scalingFactor;
     }
 }
 

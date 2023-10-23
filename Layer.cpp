@@ -9,7 +9,7 @@ void Layer::setPreviousLayer(Layer* prevLayer) {
 void Layer::setNextLayer(Layer* nxtLayer) {
 	this->nextLayer = nxtLayer;
 }
-void Layer::setOutput(std::vector<double>& rawInput) {
+void Layer::setOutput(const std::vector<double>& rawInput) {
 	if (rawInput.size() == output.size()) {
 		for (int i = 0; i < rawInput.size(); i++) {
 			this->output[i] = rawInput[i];
@@ -34,7 +34,7 @@ void Layer::forwardPropagation(double scalingFactor) {
         sum=0;
         if(activeLayer[i]){
             for (int j = 0; j < input.size(); j++) {
-                sum += weights[j][i] * input.at(j)* scalingFactor  ;
+                sum += weights[j][i] * input.at(j) * scalingFactor ;
             }
             output[i] = activationFunction(sum+ bias[i]) ;
         } else{
@@ -123,13 +123,15 @@ double Layer::getMyActPartDeriv(int index) {
 }
 
 void Layer::resetWeightsAndBias() {
-    int prevLayerNodeCount = previousLayer->getNodeCount();
+    if(!isInputLayer){
+        int prevLayerNodeCount = previousLayer->getNodeCount();
 
-    for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
-        for (int k = 0; k < prevLayerNodeCount; k++) {
-            weights[k][l] = (double)distribution(gen) / 10000;
+        for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
+            for (int k = 0; k < prevLayerNodeCount; k++) {
+                weights[k][l] = (double)distribution(gen) / 10000;
+            }
+            bias[l] = 0;
         }
-        bias[l] = 0;
     }
 }
 void Layer::useAllNodes() {
@@ -137,13 +139,15 @@ void Layer::useAllNodes() {
         i = 1;
 }
 void Layer::shakeWeightsAndBiases(double delta) {
-    int prevLayerNodeCount = previousLayer->getNodeCount();
+    if(!isInputLayer){
+        int prevLayerNodeCount = previousLayer->getNodeCount();
 
-    for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
-        for (int k = 0; k < prevLayerNodeCount; k++) {
-            weights[k][l] = distribution2(gen)%2 ? weights[k][l]*(1-delta): weights[k][l]*(1+delta);
+        for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
+            for (int k = 0; k < prevLayerNodeCount; k++) {
+                weights[k][l] = distribution2(gen)%2 ? weights[k][l]*(1-delta): weights[k][l]*(1+delta);
+            }
+            bias[l] = distribution2(gen)%2 ? bias[l]*(1-delta): bias[l]*(1+delta);
         }
-        bias[l] = distribution2(gen)%2 ? bias[l]*(1-delta): bias[l]*(1+delta);
     }
 }
 

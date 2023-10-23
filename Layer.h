@@ -29,7 +29,7 @@ public:
 	void setNextLayer(Layer* nxtLayer);
 	void resetWeightsAndBias();
 	virtual void rollActiveLayers();
-	virtual void setOutput(std::vector<double>& rawInput);
+	virtual void setOutput(const std::vector<double>& rawInput);
 	
 	virtual void updateAllWeights(double loss, double learningRate);
 	void updateAllBiases(double loss, double learningRate);
@@ -42,7 +42,7 @@ public:
 	std::vector<int>& getActiveLayer();
 	double activationFunction(double sum) const;
 	int getNodeCount() const;
-	void useAllNodes();
+	virtual void useAllNodes();
     virtual void scaleWeights();
 	void shakeWeightsAndBiases(double delta);
 };

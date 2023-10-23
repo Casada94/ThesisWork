@@ -34,7 +34,7 @@ GBDropoutLayer::GBDropoutLayer(int nodeCount, int previousLayerNodeCount, int ac
 		}
 	}
 
-    if(!isInputLayer && !isOutputLayer){
+    if(!isOutputLayer){
         for(int i=0;i<nodeCount;i+=groupSize){
             activeLayer[i+(distribution2(gen) % groupSize)] = 0;
         }
@@ -55,13 +55,15 @@ void GBDropoutLayer::rollActiveLayers() {
 }
 
 void GBDropoutLayer::scaleWeights() {
-    int prevLayerNodeCount = previousLayer->getNodeCount();
-    double scalingFactor=((double)(groupSize-1)/groupSize);
-    for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
-        for (int k = 0; k < prevLayerNodeCount; k++) {
-            weights[k][l] *= scalingFactor;
+    if(!isInputLayer){
+        int prevLayerNodeCount = previousLayer->getNodeCount();
+        double scalingFactor=((double)(groupSize-1)/groupSize);
+        for (int l = 0; l < nodeCount; l++) {	//all the weights from T/B to my T/B
+            for (int k = 0; k < prevLayerNodeCount; k++) {
+                weights[k][l] *= scalingFactor;
+            }
+            bias[l] *= scalingFactor;
         }
-        bias[l] *= scalingFactor;
     }
 }
 

@@ -12,7 +12,8 @@ private:
 public:
     MultiLevelLayer(int nodeCount, int previousLayerNodeCount, int activationFunctionSelected, int levelSize, bool isInputLayer, bool isOutputLayer);
     void rollActiveLayers() override;
-    void setOutput(std::vector<double>& input) override;
+    void setOutput(const std::vector<double>& input) override;
+    void useAllNodes() override;
     void scaleWeights() override;
 };
 

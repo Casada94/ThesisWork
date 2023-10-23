@@ -38,16 +38,16 @@ MultiLevelLayer::MultiLevelLayer(int nodeCount, int previousLayerNodeCount, int 
 
 //randomly decides which subnode we will use in a 'fatNode'
 void MultiLevelLayer::rollActiveLayers() {
-    int temp=0;
-    for (int i=0;i<activeLayer.size();i++) {
-        if(i%levelSize==0){
-            temp = i + distribution2(gen) % levelSize;
+        int temp=0;
+        for (int i=0;i<activeLayer.size();i++) {
+            if(i%levelSize==0){
+                temp = i + distribution2(gen) % levelSize;
+            }
+            activeLayer[i] = i==temp ? 1 : 0;
         }
-        activeLayer[i] = i==temp ? 1 : 0;
-    }
 }
 
-void MultiLevelLayer::setOutput(std::vector<double>& input) {
+void MultiLevelLayer::setOutput(const std::vector<double>& input) {
     if(nodeCount/input.size() != levelSize){
         throw std::runtime_error("input size and input layer size are incompatible");
     }
@@ -59,7 +59,16 @@ void MultiLevelLayer::setOutput(std::vector<double>& input) {
         }
     }
 }
-
+void MultiLevelLayer::useAllNodes() {
+    if(isInputLayer || isOutputLayer){
+        for(int i=0;i<activeLayer.size();i++){
+            activeLayer[i] = i%levelSize ? 0:1;
+        }
+    } else{
+        for (int &i: activeLayer)
+            i = 1;
+    }
+}
 void MultiLevelLayer::scaleWeights() {
 
     int previousLayerNodeCount = previousLayer->getNodeCount();
