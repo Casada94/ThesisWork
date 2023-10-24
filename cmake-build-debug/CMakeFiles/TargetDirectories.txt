@@ -1,3 +1,0 @@
-C:/Users/metal/Desktop/Bayesian Neural Network Research/NetworkExperiments/cmake-build-debug/CMakeFiles/NetworkExperiments.dir
-C:/Users/metal/Desktop/Bayesian Neural Network Research/NetworkExperiments/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/metal/Desktop/Bayesian Neural Network Research/NetworkExperiments/cmake-build-debug/CMakeFiles/rebuild_cache.dir
