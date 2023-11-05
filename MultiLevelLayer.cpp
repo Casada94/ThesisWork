@@ -5,81 +5,81 @@
 using namespace std;
 
 //Constructor with minimum information needed to build layer
-MultiLevelLayer::MultiLevelLayer(int nodeCount, int previousLayerNodeCount, int activationFunctionSelected, int levelSize, bool isInputLayer, bool isOutputLayer) {
-    this->nodeCount = nodeCount*levelSize;
-    this->activationFunctionSelected = activationFunctionSelected;
+MultiLevelLayer::MultiLevelLayer(int nodeCount, int levelSize, bool willUseAllNodes,bool isInputLayer,bool isOutputLayer) {
     this->isInputLayer = isInputLayer;
     this->isOutputLayer = isOutputLayer;
     this->levelSize = levelSize;
+    this->trainingMode = true;
 
+    this->willUseAllNodes = willUseAllNodes;
+    this->scalar = (double)levelSize;
 
-    output = vector<double>(this->nodeCount, 0);
-    activeLayer = vector<int>(this->nodeCount,0);
+    output = vector<double>(nodeCount, 0);
+    activeNodes = vector<int>(nodeCount,0);
 
     this->gen = std::mt19937(rd());
     this->distribution=std::uniform_int_distribution<int>(1, 10000);
     this->distribution2=std::uniform_int_distribution<int>(0, 99);
 
-    if (!isInputLayer) {
-        weights = std::vector<std::vector<double>>(previousLayerNodeCount, vector<double>(this->nodeCount, 0.0));
-        bias = vector<double>(this->nodeCount, 0);
+}
 
-        for (int k = 0; k < previousLayerNodeCount; k++) {	//all the weights from T/B to my T/B
-            for (int l = 0; l < this->nodeCount; l++) {
-                weights[k][l] = (double)distribution(gen) / 10000;
+void MultiLevelLayer::forwardPropagation() {
+    if(!this->isInputLayer){
+        std::vector<double> prevOutput = this->previousLayer->getOutput();
+        if(this->trainingMode && levelSize !=0 && willUseAllNodes){
+            rollActiveNodes();
+            for(int i=0; i < prevOutput.size(); i++) {
+                output[i]= prevOutput[i] * activeNodes[i] * this->scalar;
+            }
+        } else if(!willUseAllNodes) {
+            rollActiveNodes();
+            for(int i=0; i < prevOutput.size(); i++) {
+                output[i]= prevOutput[i] * activeNodes[i];
             }
         }
-    }
-
-    for(int i=0;i<this->nodeCount;i+=levelSize){
-        activeLayer[i+(distribution2(gen) % levelSize)] = 1;
+        else {
+           for(int i=0; i < prevOutput.size(); i++) {
+               output[i] = prevOutput[i];
+           }
+        }
     }
 }
 
 //randomly decides which subnode we will use in a 'fatNode'
-void MultiLevelLayer::rollActiveLayers() {
-        int temp=0;
-        for (int i=0;i<activeLayer.size();i++) {
-            if(i%levelSize==0){
-                temp = i + distribution2(gen) % levelSize;
-            }
-            activeLayer[i] = i==temp ? 1 : 0;
+void MultiLevelLayer::rollActiveNodes() {
+    int temp=0;
+    for (int i=0;i<activeNodes.size();i++) {
+        if(i%levelSize==0){
+            temp = i + (distribution2(gen) % levelSize);
         }
+        activeNodes[i] = i==temp ? 1 : 0;
+    }
 }
 
-void MultiLevelLayer::setOutput(const std::vector<double>& input) {
-    if(nodeCount/input.size() != levelSize){
-        throw std::runtime_error("input size and input layer size are incompatible");
-    }
-    int inputIndex=0;
-    for(int i=0;i<nodeCount;i++){
-        output[i] = input[inputIndex];
-        if(i%levelSize==levelSize-1){
-            inputIndex++;
+double MultiLevelLayer::getPartDerivThrough(int fromNode, double loss){
+    if(!isOutputLayer){
+        if(activeNodes[fromNode] || levelSize==0){
+            return nextLayer->getPartDerivThrough(fromNode, loss);
         }
-    }
-}
-void MultiLevelLayer::useAllNodes() {
-    if(isInputLayer || isOutputLayer){
-        for(int i=0;i<activeLayer.size();i++){
-            activeLayer[i] = i%levelSize ? 0:1;
-        }
+        return 0.0;
     } else{
-        for (int &i: activeLayer)
-            i = 1;
+        return loss*activeNodes[fromNode];
     }
 }
-void MultiLevelLayer::scaleWeights() {
 
-    int previousLayerNodeCount = previousLayer->getNodeCount();
 
-    for (int l = 0; l < this->nodeCount; l++) {
-        for (int k = 0; k < previousLayerNodeCount; k++) {	//all the weights from T/B to my T/B
-//            weights[k][l] *= (double)(1.0 / levelSize);
-            weights[k][l] *= 0.25;
+void MultiLevelLayer::setOutput(const std::vector<double>& rawInput) {
+    if(rawInput.size() == output.size()){
+        for(int i =0; i < this->output.size(); i++){
+            output[i] = rawInput[i];
         }
-//        bias[l] *= (double)(1.0 / levelSize);
-        bias[l] *= 0.25;
+    } else {
+        throw std::runtime_error("Given match does not have the same size as output vector");
     }
-
+}
+std::vector<double>& MultiLevelLayer::getOutput() {
+    if(isOutputLayer && output.size()!=1){
+        output[0]+=output[1];;
+    }
+    return output;
 }

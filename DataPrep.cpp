@@ -56,7 +56,7 @@ void readDataSet(std::string filename, std::vector<std::vector<double>>& input) 
                     input[count][i] = (std::stod(tokens[i]) - 35.63186143) / 2.135952397;
                     break;
                 case 7:
-                    input[count][i] = (std::stod(tokens[i]) + 119.5697045) / 2.003531724;
+                    input[count][i] = ((std::stod(tokens[i])*-1) - 119.5697045) / 2.003531724;
                     break;
             }
         }

@@ -8,13 +8,17 @@
 class MultiLevelLayer: public Layer{
 private:
     int levelSize;
+    std::vector<int> activeNodes;
+    double scalar;
+    bool willUseAllNodes;
 
 public:
-    MultiLevelLayer(int nodeCount, int previousLayerNodeCount, int activationFunctionSelected, int levelSize, bool isInputLayer, bool isOutputLayer);
-    void rollActiveLayers() override;
-    void setOutput(const std::vector<double>& input) override;
-    void useAllNodes() override;
-    void scaleWeights() override;
+    MultiLevelLayer(int nodeCount, int levelSize,bool willUseAllNodes, bool isInputLayer,bool isOutputLayer);
+    void rollActiveNodes();
+    void setOutput(const std::vector<double>& rawInput) override;
+    double getPartDerivThrough(int fromNode, double loss) override;
+    void forwardPropagation() override;
+    std::vector<double>& getOutput() override;
 };
 
 

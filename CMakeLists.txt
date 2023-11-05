@@ -8,4 +8,6 @@ add_executable(NetworkExperiments main.cpp
         DropOutLayer.cpp
         Layer.cpp
         GBDropoutLayer.cpp
-        MultiLevelLayer.cpp)
+        MultiLevelLayer.cpp
+        DataPrep.cpp
+        DenseLayer.cpp)
